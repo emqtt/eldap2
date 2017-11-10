@@ -622,13 +622,13 @@ loop(Cpid, Data) ->
     {ssl_error, _Sock, Reason} ->
         ?PRINT("Got ssl_error from ~p, reason: ~p~n", [_Sock, Reason]),
         exit({ssl_error, Reason});
-	
+
     _XX ->
-	    ?PRINT("loop got: ~p~n",[_XX]),
+        ?PRINT("Drop the unknown message: ~p~n", [_XX]),
+        ensure_active_once(Data),
 	    ?MODULE:loop(Cpid, Data)
 
     end.
-
 
 %%% --------------------------------------------------------------------
 %%% startTLS Request
@@ -1053,6 +1053,17 @@ recv_once(S, #eldap{using_tls=true, timeout=Timeout}) ->
         {ssl_error, S, Reason} -> {error, Reason}
     after Timeout ->
         {error, timeout}
+    end.
+
+ensure_active_once(#eldap{using_tls=false, fd=S}) ->
+    case inet:getopts(S, [active]) of
+        {ok, [{active, false}]} -> inet:setopts(S, [{active, once}]);
+        {ok, [{active, true}]}  -> ok
+    end;
+ensure_active_once(#eldap{using_tls=true, fd=S}) ->
+    case ssl:getopts(S, [active]) of
+        {ok, [{active, false}]} -> ssl:setopts(S, [{active, once}]);
+        {ok, [{active, true}]}  -> ok
     end.
 
 %%% Check for expected kind of reply
