@@ -30,10 +30,11 @@ _build
 .rebar3
 rebar3.crashdump
 .DS_Store
-include/ELDAPv3.asn1db
 include/ELDAPv3.hrl
 src/ELDAPv3.erl
 src/eldap.erl
 src/eldap_t.erl
 _build
 rebar.lock
+src/ELDAPv3.asn1db
+asngen/
